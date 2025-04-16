@@ -3,11 +3,11 @@ const display = document.getElementById('display');
 // Store some variables in an object
 const calculatorObject =
 {
-    firstNumber : 0,
-    previousAnswer : 0,
-    operator : 0,
-    state : 0,  // state: 0 = initial, 1 = entering first number, 2 = operator button pressed
-}               // 3 = entering second number, 4 = result calculated and shown
+    firstNumber : 0,    // Store first number in operation
+    previousAnswer : 0, // Store answer from previous calculation
+    operator : 0,       // Store operation type
+    state : 0,          // state: 0 = initial, 1 = entering first number, 2 = operator button pressed
+}                       // 3 = entering second number, 4 = result calculated and shown
 
 function updateDisplay(number)
 {
@@ -32,7 +32,7 @@ function addNumber(number)
         updateDisplay(number);
         resetButtons();
     }
-    else if (calculatorObject.state == 1)
+    else if (calculatorObject.state == 1) // User is inputting first number
     {
         updateDisplay(number);
     }
@@ -41,16 +41,46 @@ function addNumber(number)
         display.textContent = number.toString();
         calculatorObject.state = 3;
     }
-    else if (calculatorObject.state == 3)
-        {
-            updateDisplay(number);
-        }
+    else if (calculatorObject.state == 3) // User is inputting second number
+    {
+        updateDisplay(number);
+    }
     else if (calculatorObject.state == 4) // Inputting a new number after a calculation result resets the display
     {
         display.textContent = number.toString();
-        calculatorObject.state = 0;
+        calculatorObject.state = 1;
     }
 }
+
+function retrievePreviousAnswer() // Function for previous answer ANS button
+{
+    console.log(calculatorObject.state)
+    if (calculatorObject.state == 0)
+    {
+        calculatorObject.state = 1;
+        display.textContent = calculatorObject.previousAnswer;
+        resetButtons();
+    }
+    else if (calculatorObject.state == 1) // User is inputting first number
+    {
+        display.textContent = calculatorObject.previousAnswer;
+    }
+    else if (calculatorObject.state == 2) // Inputting a second number for a calculation resets the display
+    {
+        display.textContent = calculatorObject.previousAnswer;
+        calculatorObject.state = 3;
+    }
+    else if (calculatorObject.state == 3) // User is inputting second number
+    {
+        display.textContent = calculatorObject.previousAnswer;
+    }
+    else if (calculatorObject.state == 4) // Inputting a new number after a calculation result resets the display
+    {
+        display.textContent = calculatorObject.previousAnswer;
+        calculatorObject.state = 1;
+    }
+}
+
 
 function addDecimalPoint()
 {
@@ -72,8 +102,8 @@ function deleteNumber()
     }
 }
 
-function resetButtons()
-{
+function resetButtons() // Reset operator buttons back to orange
+{                       // Clicking an operator button will highlight it in yellow
     const buttons = document.querySelectorAll(".function-button");
     for (let i = 0; i < buttons.length; i++)
     {
@@ -81,7 +111,7 @@ function resetButtons()
     }
 }
 
-function setOperation(event, operationString)
+function setOperation(event, operationString) // Function called when user is choosing operation
 {
     if (calculatorObject.state == 1)
     {
@@ -107,8 +137,7 @@ function setOperation(event, operationString)
 
 function Calculate()
 {
-    console.log(calculatorObject.state)
-    if (calculatorObject.state == 3)
+    if (calculatorObject.state == 3) // Only run calculate function when two numbers have been inputted
     {
         if (calculatorObject.operator == "plus")
         {
@@ -126,7 +155,7 @@ function Calculate()
             }
             else if (calculatorObject.operator == "divide")
             {
-                if (display.textContent == "0")
+                if (display.textContent == "0") // Dont divide by zero
                 {
                     display.textContent = "DON\'T"
                 }
@@ -140,10 +169,10 @@ function Calculate()
                 display.textContent = parseFloat(display.textContent).toFixed(2);
             }
         }
+        calculatorObject.state = 4;
+        calculatorObject.previousAnswer = display.textContent;
+        resetButtons();
     } 
-    calculatorObject.state = 4;
-    calculatorObject.previousAnswer = display.textContent;
-    resetButtons();
 }
 
 function Clear()
@@ -216,5 +245,5 @@ divideButton.addEventListener('click', event => setOperation(event,"divide"));
 const equalButton = document.getElementById('equal-button');
 equalButton.addEventListener('click', event => Calculate());
 
-// const percentButton = document.getElementById('percent-button');
-// percentButton.addEventListener('click', event => divide(display.textContent,100));
+const answerButton = document.getElementById('answer-button');
+answerButton.addEventListener('click', event => retrievePreviousAnswer());
