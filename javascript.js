@@ -1,21 +1,54 @@
 const display = document.getElementById('display');
 
+// Store some variables in an object
+const calculatorObject =
+{
+    firstNumber : 0,
+    previousAnswer : 0,
+    operator : 0,
+    state : 0,  // state: 0 = initial, 1 = entering first number, 2 = operator button pressed
+}               // 3 = entering second number, 4 = result calculated and shown
+
+function updateDisplay(number)
+{
+    if (display.textContent == "0") // If zero on the display, replace it with the new digit
+    {
+        display.textContent = number.toString();
+    }
+    else // There is a non-zero number on the display
+    {
+        if (display.textContent.length < 9) // Keep number on display below 10 digits so it can fit
+        {
+            display.textContent = display.textContent + number.toString(); // Add the new digit
+        }
+    }
+}
+
 function addNumber(number)
 {
-    if (display.textContent.length < 9) // Keep number on display below 10 digits so it can fit
+    if (calculatorObject.state == 0)
     {
-        if (display.textContent.includes("."))
+        calculatorObject.state = 1; // Change state out of initial state
+        updateDisplay(number);
+        resetButtons();
+    }
+    else if (calculatorObject.state == 1)
+    {
+        updateDisplay(number);
+    }
+    else if (calculatorObject.state == 2) // Inputting a second number for a calculation resets the display
+    {
+        display.textContent = number.toString();
+        calculatorObject.state = 3;
+    }
+    else if (calculatorObject.state == 3)
         {
-            let existingDecimalPlaces = display.textContent.split('.')[1].length; // Count existing number of digits after decimal place
-            display.textContent = (parseFloat(display.textContent) + number/(Math.pow(10,existingDecimalPlaces+1))).toFixed(existingDecimalPlaces+1);
-            // Divide the new number by the correct factor of 10 to append it to the end of the decimal
-            // Fix number of decimal places to handle float behaviour
+            updateDisplay(number);
         }
-        else
-        {
-            display.textContent = display.textContent*10 + number;
-            // Shift existing number on display to the left by multiplying by 10 and add the new number on the end
-        }
+    else if (calculatorObject.state == 4) // Inputting a new number after a calculation result resets the display
+    {
+        display.textContent = number.toString();
+        calculatorObject.state = 0;
     }
 }
 
@@ -32,37 +65,101 @@ function addDecimalPoint()
 
 function deleteNumber()
 {
-    if (display.textContent.includes("."))
+    display.textContent = display.textContent.slice(0,-1); // Remove last digit
+    if (display.textContent == "")
     {
-        if (display.textContent.slice(-1) == "." ) // If last character is decimal, remove it
-        {
-            display.textContent = display.textContent.slice(0,-1);
-        }
-        else // Last character is a digit
-        {
-            let existingDecimalPlaces = display.textContent.split('.')[1].length; // Count existing number of digits after decimal place
-            display.textContent = (display.textContent - ( (display.textContent.slice(-1)) / Math.pow(10,existingDecimalPlaces) )).toFixed(existingDecimalPlaces-1);
-            // Subtract decimal number by last digit reduced to its own decimal by raising to correct power
-            // Fix number of decimal places to handle float behaviour
-
-            if (existingDecimalPlaces == 1) // If removing last digit after decimal point
-            {
-                display.textContent = display.textContent + "."; // Retain the decimal point
-            }
-        }
-    }
-    else
-    {
-        display.textContent = (display.textContent-display.textContent.slice(-1))/10;
-        // Subtract number by last digit and divide by 10 to remove last digit
+        display.textContent = 0;
     }
 }
 
+function resetButtons()
+{
+    const buttons = document.querySelectorAll(".function-button");
+    for (let i = 0; i < buttons.length; i++)
+    {
+        buttons[i].style.backgroundColor = "orange";
+    }
+}
+
+function setOperation(event, operationString)
+{
+    if (calculatorObject.state == 1)
+    {
+        resetButtons();
+        event.target.style.backgroundColor = "gold";
+        calculatorObject.operator = operationString;
+        calculatorObject.firstNumber = display.textContent; // Store first number
+        calculatorObject.state = 2;
+    }
+    else if (calculatorObject.state == 2)
+    {
+        resetButtons();
+        event.target.style.backgroundColor = "gold";
+        calculatorObject.operator = operationString;
+    }
+    else if (calculatorObject.state == 3)
+    {
+        resetButtons();
+        event.target.style.backgroundColor = "gold";
+        calculatorObject.operator = operationString;
+    }
+}
+
+function Calculate()
+{
+    console.log(calculatorObject.state)
+    if (calculatorObject.state == 3)
+    {
+        if (calculatorObject.operator == "plus")
+        {
+            display.textContent = Number(calculatorObject.firstNumber) + Number(display.textContent);
+        }
+        else if (calculatorObject.operator == "minus")
+        {
+            display.textContent = Number(calculatorObject.firstNumber) - Number(display.textContent);
+        }
+        else
+        {
+            if (calculatorObject.operator == "multiply")
+            {
+                display.textContent = Number(calculatorObject.firstNumber) * Number(display.textContent);
+            }
+            else if (calculatorObject.operator == "divide")
+            {
+                if (display.textContent == "0")
+                {
+                    display.textContent = "DON\'T"
+                }
+                else
+                {
+                    display.textContent = Number(calculatorObject.firstNumber) / Number(display.textContent);
+                }
+            }
+            if (display.textContent.includes("."))
+            {
+                display.textContent = parseFloat(display.textContent).toFixed(2);
+            }
+        }
+    } 
+    calculatorObject.state = 4;
+    calculatorObject.previousAnswer = display.textContent;
+    resetButtons();
+}
+
+function Clear()
+{
+    display.textContent = 0;
+    calculatorObject.state = 0;
+    calculatorObject.firstNumber = 0;
+    calculatorObject.previousAnswer = 0;
+    calculatorObject.operator = 0;
+    resetButtons();
+}
 
 // Button events
 
 const clearButton = document.getElementById('clear-button');
-clearButton.addEventListener('click', event => display.textContent = 0);
+clearButton.addEventListener('click', event => Clear());
 
 const nineButton = document.getElementById('nine-button');
 nineButton.addEventListener('click', event => addNumber(9));
@@ -98,10 +195,26 @@ const pointButton = document.getElementById('point-button');
 pointButton.addEventListener('click', event => addDecimalPoint());
 
 const invertButton = document.getElementById('invert-button');
-invertButton.addEventListener('click', event => display.textContent = -1 * display.textContent);
+invertButton.addEventListener('click', event => display.textContent = display.textContent.slice(-1) == "." ? -1 * display.textContent + "." : -1 * display.textContent);
+// Invert number by multiplying by -1, retain decimal point at end of number if present
 
 const deleteButton = document.getElementById('delete-button');
 deleteButton.addEventListener('click', event => deleteNumber());
+
+const plusButton = document.getElementById('plus-button');
+plusButton.addEventListener('click', event => setOperation(event,"plus"));
+
+const minusButton = document.getElementById('minus-button');
+minusButton.addEventListener('click', event => setOperation(event,"minus"));
+
+const multiplyButton = document.getElementById('multiply-button');
+multiplyButton.addEventListener('click', event => setOperation(event,"multiply"));
+
+const divideButton = document.getElementById('divide-button');
+divideButton.addEventListener('click', event => setOperation(event,"divide"));
+
+const equalButton = document.getElementById('equal-button');
+equalButton.addEventListener('click', event => Calculate());
 
 // const percentButton = document.getElementById('percent-button');
 // percentButton.addEventListener('click', event => divide(display.textContent,100));
