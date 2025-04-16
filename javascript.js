@@ -34,10 +34,22 @@ function deleteNumber()
 {
     if (display.textContent.includes("."))
     {
-        let existingDecimalPlaces = display.textContent.split('.')[1].length; // Count existing number of digits after decimal place
-        display.textContent = display.textContent - ( (display.textContent.slice(-1)) / Math.pow(10,existingDecimalPlaces) ).toFixed(existingDecimalPlaces+1);
-        // Subtract decimal number by last digit raised to correct power to remove last digit
-        // Fix number of decimal places to handle float behaviour
+        if (display.textContent.slice(-1) == "." ) // If last character is decimal, remove it
+        {
+            display.textContent = display.textContent.slice(0,-1);
+        }
+        else // Last character is a digit
+        {
+            let existingDecimalPlaces = display.textContent.split('.')[1].length; // Count existing number of digits after decimal place
+            display.textContent = (display.textContent - ( (display.textContent.slice(-1)) / Math.pow(10,existingDecimalPlaces) )).toFixed(existingDecimalPlaces-1);
+            // Subtract decimal number by last digit reduced to its own decimal by raising to correct power
+            // Fix number of decimal places to handle float behaviour
+
+            if (existingDecimalPlaces == 1) // If removing last digit after decimal point
+            {
+                display.textContent = display.textContent + "."; // Retain the decimal point
+            }
+        }
     }
     else
     {
@@ -90,3 +102,6 @@ invertButton.addEventListener('click', event => display.textContent = -1 * displ
 
 const deleteButton = document.getElementById('delete-button');
 deleteButton.addEventListener('click', event => deleteNumber());
+
+// const percentButton = document.getElementById('percent-button');
+// percentButton.addEventListener('click', event => divide(display.textContent,100));
