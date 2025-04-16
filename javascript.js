@@ -1,33 +1,53 @@
-// Button events
-
 const display = document.getElementById('display');
 
 function addNumber(number)
 {
-    if (display.textContent.length < 9)
+    if (display.textContent.length < 9) // Keep number on display below 10 digits so it can fit
     {
         if (display.textContent.includes("."))
         {
-            let existingDecimalPlaces = display.textContent.split('.')[1].length;
+            let existingDecimalPlaces = display.textContent.split('.')[1].length; // Count existing number of digits after decimal place
             display.textContent = (parseFloat(display.textContent) + number/(Math.pow(10,existingDecimalPlaces+1))).toFixed(existingDecimalPlaces+1);
+            // Divide the new number by the correct factor of 10 to append it to the end of the decimal
+            // Fix number of decimal places to handle float behaviour
         }
         else
         {
             display.textContent = display.textContent*10 + number;
+            // Shift existing number on display to the left by multiplying by 10 and add the new number on the end
         }
     }
 }
 
 function addDecimalPoint()
 {
-    if (display.textContent.length < 9)
+    if (display.textContent.length < 9) // Keep number on display below 10 digits so it can fit
     {
-        if (display.textContent.includes(".") == false)
+        if (display.textContent.includes(".") == false) // Only add a decimal point if one doesnt already exist
         {
-            display.textContent = display.textContent + "."
+            display.textContent = display.textContent + ".";
         }
     }
 }
+
+function deleteNumber()
+{
+    if (display.textContent.includes("."))
+    {
+        let existingDecimalPlaces = display.textContent.split('.')[1].length; // Count existing number of digits after decimal place
+        display.textContent = display.textContent - ( (display.textContent.slice(-1)) / Math.pow(10,existingDecimalPlaces) ).toFixed(existingDecimalPlaces+1);
+        // Subtract decimal number by last digit raised to correct power to remove last digit
+        // Fix number of decimal places to handle float behaviour
+    }
+    else
+    {
+        display.textContent = (display.textContent-display.textContent.slice(-1))/10;
+        // Subtract number by last digit and divide by 10 to remove last digit
+    }
+}
+
+
+// Button events
 
 const clearButton = document.getElementById('clear-button');
 clearButton.addEventListener('click', event => display.textContent = 0);
@@ -64,3 +84,9 @@ zeroButton.addEventListener('click', event => addNumber(0));
 
 const pointButton = document.getElementById('point-button');
 pointButton.addEventListener('click', event => addDecimalPoint());
+
+const invertButton = document.getElementById('invert-button');
+invertButton.addEventListener('click', event => display.textContent = -1 * display.textContent);
+
+const deleteButton = document.getElementById('delete-button');
+deleteButton.addEventListener('click', event => deleteNumber());

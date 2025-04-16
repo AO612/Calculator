@@ -48,7 +48,7 @@ body
     width: 390px;
     border-radius: 5px;
     text-align: right;
-    font-size: 72px;
+    font-size: 64px;
     line-height: 100px;
 }
 
@@ -70,7 +70,7 @@ button
     background-color: teal;
 }
 
-#zero-button
+#delete-button
 {
-    width: 200px;
+    background-color: tomato;
 }
