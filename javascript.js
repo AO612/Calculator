@@ -95,10 +95,17 @@ function addDecimalPoint()
 
 function deleteNumber()
 {
-    display.textContent = display.textContent.slice(0,-1); // Remove last digit
-    if (display.textContent == "")
+    if (display.textContent.includes("e"))
     {
-        display.textContent = 0;
+        // If display number in expontial form, do not operate on it, result too big
+    }
+    else
+    {
+        display.textContent = display.textContent.slice(0,-1); // Remove last digit
+        if (display.textContent == "")
+        {
+            display.textContent = 0;
+        }
     }
 }
 
@@ -147,30 +154,32 @@ function Calculate()
         {
             display.textContent = Number(calculatorObject.firstNumber) - Number(display.textContent);
         }
-        else
+        else if (calculatorObject.operator == "multiply")
         {
-            if (calculatorObject.operator == "multiply")
+            display.textContent = Number(calculatorObject.firstNumber) * Number(display.textContent);
+        }
+        else if (calculatorObject.operator == "divide")
+        {
+            if (display.textContent == "0") // Dont divide by zero
             {
-                display.textContent = Number(calculatorObject.firstNumber) * Number(display.textContent);
+                display.textContent = "DON\'T"
             }
-            else if (calculatorObject.operator == "divide")
+            else
             {
-                if (display.textContent == "0") // Dont divide by zero
-                {
-                    display.textContent = "DON\'T"
-                }
-                else
-                {
-                    display.textContent = Number(calculatorObject.firstNumber) / Number(display.textContent);
-                }
-            }
-            if (display.textContent.includes("."))
-            {
-                display.textContent = parseFloat(display.textContent).toFixed(2);
+                display.textContent = Number(calculatorObject.firstNumber) / Number(display.textContent);
             }
         }
+        
+        if (display.textContent.length > 9) // If result too big to fit on display
+        {                                   // Convert to exponential form
+            display.textContent = Number.parseFloat(display.textContent).toExponential(3);
+            calculatorObject.previousAnswer = 0;
+        }
+        else
+        {
+            calculatorObject.previousAnswer = display.textContent;
+        }
         calculatorObject.state = 4;
-        calculatorObject.previousAnswer = display.textContent;
         resetButtons();
     } 
 }
@@ -183,6 +192,18 @@ function Clear()
     calculatorObject.previousAnswer = 0;
     calculatorObject.operator = 0;
     resetButtons();
+}
+
+function Invert()
+{
+    if (display.textContent.includes("e"))
+    {
+        // If display number in expontial form, do not operate on it, result too big
+    }
+    else
+    {
+        display.textContent = display.textContent.slice(-1) == "." ? -1 * display.textContent + "." : -1 * display.textContent;
+    }
 }
 
 // Button events
@@ -224,7 +245,7 @@ const pointButton = document.getElementById('point-button');
 pointButton.addEventListener('click', event => addDecimalPoint());
 
 const invertButton = document.getElementById('invert-button');
-invertButton.addEventListener('click', event => display.textContent = display.textContent.slice(-1) == "." ? -1 * display.textContent + "." : -1 * display.textContent);
+invertButton.addEventListener('click', event => Invert());
 // Invert number by multiplying by -1, retain decimal point at end of number if present
 
 const deleteButton = document.getElementById('delete-button');
